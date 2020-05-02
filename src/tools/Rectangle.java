@@ -46,19 +46,20 @@ public class Rectangle extends Tool{
             Point a = points.get(0);
             Point b = points.get(points.size() - 1);
 
-            Point start = new Point(
-                    Math.min(a.x, b.x),
-                    Math.min(a.y, b.y)
-            );
-            Dimension size = new Dimension(
-                    Math.abs(a.x - b.x),
-                    Math.abs(a.y - b.y)
-            );
             if(shift){
-                size.height = Math.min(size.height, size.width);
-                size.width = Math.min(size.height, size.width);
+                if(b.x - a.x == 0 || b.y - a.y == 0){
+                    b.setLocation(a);
+                }else{
+                    int xx,yy;
+                    xx = (b.x - a.x) / Math.abs(b.x - a.x);
+                    yy = (b.y - a.y) / Math.abs(b.y - a.y);
+                    b.setLocation(
+                            a.x + xx * (Math.min(Math.abs(a.x-b.x), Math.abs(a.y - b.y))),
+                            a.y + yy * (Math.min(Math.abs(a.x-b.x), Math.abs(a.y - b.y)))
+                    );
+                }
             }
-            option_selected.draw(g, start, size);
+            option_selected.draw(g, a, b);
         }
     }
 
@@ -74,12 +75,15 @@ class RectangleOption{
         this.fill = fill;
     }
 
-    public void draw(Graphics2D g, Point a, Dimension b){
+    public void draw(Graphics2D g, Point a, Point b){
         if(fill){
             g.fill(
                     stroke.createStrokedShape(
                             new java.awt.Rectangle(
-                                    a,b
+                                    Math.min(a.x, b.x),
+                                    Math.min(a.y, b.y),
+                                    Math.max(a.x, b.x) - Math.min(a.x, b.x),
+                                    Math.max(a.y, b.y) - Math.min(a.y, b.y)
                             )
                     )
             );
@@ -87,7 +91,10 @@ class RectangleOption{
             g.draw(
                     stroke.createStrokedShape(
                             new java.awt.Rectangle(
-                                    a,b
+                                    Math.min(a.x, b.x),
+                                    Math.min(a.y, b.y),
+                                    Math.max(a.x, b.x) - Math.min(a.x, b.x),
+                                    Math.max(a.y, b.y) - Math.min(a.y, b.y)
                             )
                     )
             );

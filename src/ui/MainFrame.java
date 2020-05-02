@@ -7,10 +7,7 @@ import tools.Rectangle;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -39,12 +36,34 @@ public class MainFrame extends JFrame {
 
 
         JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
 
         JPanel toolsBar = new JPanel();
-        panel.add(toolsBar);
+        panel.add(toolsBar, BorderLayout.PAGE_START);
         PaintPanel canvas = new PaintPanel();
+        panel.add(canvas, BorderLayout.CENTER);
 
         toolsBar.setLayout(new GridLayout(1,0));
+
+        JButton undo = new JButton("撤销");
+        undo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.undo();
+            }
+        });
+        toolsBar.add(undo);
+
+        JButton redo = new JButton("恢复");
+        redo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.redo();
+            }
+        });
+        toolsBar.add(redo);
+
+
         ButtonGroup tools = new ButtonGroup();
         for(Class<?> c: new Class<?>[]{Pencil.class, Line.class, Rectangle.class}){
             JRadioButton btn = new JRadioButton();
@@ -70,17 +89,49 @@ public class MainFrame extends JFrame {
                 btn.doClick();
             }
         }
+        panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT, InputEvent.SHIFT_DOWN_MASK), "SHIFT");
+        panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT, 0,true), "UNSHIFT");
+        panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ctrl Z"), "SHIFT");
+        panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ctrl Y"), "SHIFT");
+        panel.getActionMap().put("SHIFT", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println(1);
+                canvas.setShift(true);
+            }
+        });
+        panel.getActionMap().put("UNSHIFT", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println(0);
+                canvas.setShift(false);
+            }
+        });
+
 
         super.getContentPane().add(panel);
         super.pack();
         super.setVisible(true);
-        super.setResizable(false);
         super.setJMenuBar(menuBar);
         super.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
                 exit.doClick();
             }
         });
-        super.setResizable(false);
+        super.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    System.out.println(1);
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    System.out.println(0);
+                }
+            }
+        });
     }
 }
