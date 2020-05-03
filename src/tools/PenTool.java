@@ -1,8 +1,6 @@
 package tools;
 
-import tools.pens.AbstractPen;
-import tools.pens.Line;
-import tools.pens.Pencil;
+import tools.pens.*;
 import tools.pens.Rectangle;
 import ui.PaintPanel;
 
@@ -23,6 +21,7 @@ public class PenTool extends AbstractTool{
         Line.initialize();
         Pencil.initialize();
         Rectangle.initialize();
+        Circle.initialize();
     }
 
     public static PenTool getInstance(){

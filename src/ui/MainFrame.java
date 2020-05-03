@@ -140,7 +140,7 @@ public class MainFrame extends JFrame {
         Box pen_options = new Box(BoxLayout.X_AXIS);
         pen_options.setBorder(BorderFactory.createTitledBorder("画笔选项"));
 
-        for(Class<?> c: new Class<?>[]{Pencil.class, Line.class, Rectangle.class}){
+        for(Class<?> c: new Class<?>[]{Pencil.class, Line.class, Rectangle.class, Circle.class}){
             JRadioButton btn = new JRadioButton();
             try{
                 btn.setIcon(new ImageIcon(ImageIO.read(c.getResource("resources/" + c.getSimpleName() + ".bmp"))));
@@ -301,6 +301,7 @@ public class MainFrame extends JFrame {
                 }
             }
         });
+        panel.setPreferredSize(new Dimension(900,700));
 
 
         super.getContentPane().add(panel);
