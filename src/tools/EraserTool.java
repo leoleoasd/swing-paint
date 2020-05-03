@@ -1,6 +1,7 @@
 package tools;
 
 import tools.pens.AbstractPen;
+import tools.pens.Pencil;
 import ui.PaintPanel;
 
 import javax.swing.*;
@@ -11,7 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class EraserTool extends AbstractTool{
 
-    AbstractPen drawing;
+    Pencil drawing;
     public Class<? extends AbstractPen> selected_pen;
     private static EraserTool instance = null;
 
@@ -32,7 +33,7 @@ public class EraserTool extends AbstractTool{
     public void paint(Graphics2D canvas) {
         canvas.drawImage(panel.img, 0, 0, null);
         if (drawing != null) {
-            canvas.setPaint(panel.front);
+            canvas.setPaint(panel.back);
             drawing.draw(canvas, panel.shift);
         }
     }
@@ -42,22 +43,17 @@ public class EraserTool extends AbstractTool{
         return new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                try {
-                    drawing = (AbstractPen) selected_pen.getDeclaredConstructor().newInstance();
-                    drawing.addPoint(e.getPoint());
-                    panel.repaint();
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(panel, "未知错误!\n" + ex.toString());
-                    System.exit(1);
-                }
+                drawing = new Pencil();
+                Pencil.option_selected = Pencil.options[4];
+                drawing.addPoint(e.getPoint());
+                panel.repaint();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 panel.pushStack();
                 drawing.addPoint(e.getPoint());
-                panel.imgG.setPaint(panel.front);
+                panel.imgG.setPaint(panel.back);
                 drawing.draw(panel.imgG, panel.shift);
                 drawing = null;
                 panel.repaint();

@@ -59,6 +59,7 @@ public class MainFrame extends JFrame {
         EditTool.initialize(canvas);
         TextTool.initialize(canvas);
         ImageTool.initialize(canvas);
+        EraserTool.initialize(canvas);
 
         Box tools1 = new Box(BoxLayout.Y_AXIS);
         JButton undo = new JButton("撤销");
@@ -81,6 +82,7 @@ public class MainFrame extends JFrame {
         toolsBar.add(tools1);
 
 
+        Box tools3 = new Box(BoxLayout.Y_AXIS);
         JButton select = new JButton("选择");
         select.addActionListener(new ActionListener() {
             @Override
@@ -91,7 +93,19 @@ public class MainFrame extends JFrame {
                 }
             }
         });
-        toolsBar.add(select);
+        tools3.add(select);
+        JButton eraser = new JButton("橡皮");
+        eraser.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(!canvas.selected_tool.getClass().equals(EraserTool.class)){
+                    pens_btn_group.clearSelection();
+                    canvas.setTool(EraserTool.getInstance());
+                }
+            }
+        });
+        tools3.add(eraser);
+        toolsBar.add(tools3);
 
         Box tools2 = new Box(BoxLayout.Y_AXIS);
         JButton text = new JButton("插入文字");
