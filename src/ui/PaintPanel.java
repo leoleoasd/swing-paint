@@ -1,145 +1,117 @@
 package ui;
 
-import tools.*;
-import tools.Rectangle;
+import tools.AbstractTool;
+import tools.PenTool;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
+import tools.Util;
 
 public class PaintPanel extends JPanel {
+    public AbstractTool selected_tool;
 
-    Class<?> selected_tool;
-    Class<?>[] tools;
+    public Color front = Color.BLACK;
+    public Color back = Color.white;
 
-    Color front = Color.BLACK;
-    Color background = Color.white;
+    Stack<BufferedImage> undoStack = new Stack<>();
+    Stack<BufferedImage> redoStack = new Stack<>();
 
-    Stack<Image> undoStack = new Stack<>();
-    Stack<Image> redoStack = new Stack<>();
+    public BufferedImage img;
+    public Graphics2D imgG;
+    public boolean shift = false;
 
-    Image img;
-    Tool drawing;
-    Graphics2D imgG = null;
-    boolean shift = false;
-
-    PaintPanel(){
+    PaintPanel() {
         super();
-        tools = new Class<?>[]{
-                Pencil.class,
-                Line.class,
-                Rectangle.class
-        };
-        selected_tool = tools[0];
-
-        MouseAdapter a = new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                try {
-                    drawing = (Tool) selected_tool.getDeclaredConstructor().newInstance();
-                    drawing.addPoint(e.getPoint());
-                    repaint();
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(PaintPanel.this, "未知错误!\n" + ex.toString());
-                    System.exit(1);
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                pushStack();
-                drawing.addPoint(e.getPoint());
-                imgG.setPaint(front);
-                drawing.draw(imgG, shift);
-                drawing = null;
-                repaint();
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                drawing.addPoint(e.getPoint());
-                repaint();
-            }
-        };
-
-        addMouseListener(a);
-        addMouseMotionListener(a);
 
         setPreferredSize(new Dimension(800,600));
+
+        img = new BufferedImage(800,600,BufferedImage.TYPE_INT_RGB);
+        imgG = (Graphics2D) img.getGraphics();
+        imgG.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        imgG.setPaint(back);
+        imgG.fillRect(0, 0, 800,600);
+        imgG.setPaint(front);
+    }
+
+    PaintPanel(BufferedImage img1) {
+        super();
+
+        setPreferredSize(new Dimension(img1.getWidth(),img1.getHeight()));
+
+        img = new BufferedImage(img1.getWidth(),img1.getHeight(),BufferedImage.TYPE_INT_RGB);
+        imgG = (Graphics2D) img.getGraphics();
+        imgG.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        imgG.setPaint(back);
+        imgG.drawImage(img1,0,0,null);
+        imgG.setPaint(front);
     }
 
     @Override
     protected void paintComponent(Graphics g1) {
-        if (img == null) {
-            img = createImage(getSize().width, getSize().height);
-            imgG = (Graphics2D) img.getGraphics();
-            imgG.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            imgG.setPaint(background);
-            imgG.fillRect(0, 0, getSize().width, getSize().height);
-            imgG.setPaint(front);
-        }
-        g1.drawImage(img, 0, 0, null);
-        ((Graphics2D)g1).setPaint(front);
-
-        if (drawing != null) {
-            drawing.draw((Graphics2D) g1, shift);
-        }
+        ((Graphics2D)g1).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        selected_tool.paint(((Graphics2D)g1));
     }
 
     public void pushStack(){
-        BufferedImage copyOfImage = new BufferedImage(getSize().width,
-                getSize().height, BufferedImage.TYPE_INT_RGB);
-        Graphics g = copyOfImage.createGraphics();
-        g.drawImage(img, 0, 0, getWidth(), getHeight(), null);
-        undoStack.push(copyOfImage);
+        undoStack.push(Util.copyImage(img));
         redoStack.clear();
     }
 
     public void undo(){
         if(undoStack.size() > 0){
-            System.out.println(123);
+            if(this.selected_tool.getClass() != PenTool.class)
+                this.setTool(PenTool.getInstance());
             Image pop = undoStack.pop();
-            redoStack.push(copyImage(img));
+            redoStack.push(Util.copyImage(img));
 
-            img = copyImage(pop);
-            imgG = (Graphics2D) img.getGraphics();
-            imgG.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
+            imgG.drawImage(pop, 0,0,null);
             repaint();
         }
     }
 
     public void redo(){
         if(redoStack.size() > 0){
-            System.out.println(123);
+            if(this.selected_tool.getClass() != PenTool.class)
+                this.setTool(PenTool.getInstance());
             Image pop = redoStack.pop();
-            undoStack.push(copyImage(img));
+            undoStack.push(Util.copyImage(img));
 
-            img = copyImage(pop);
-            imgG = (Graphics2D) img.getGraphics();
-            imgG.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
+            imgG.drawImage(pop, 0,0,null);
             repaint();
         }
     }
 
-    private BufferedImage copyImage(Image img) {
-        BufferedImage copyOfImage = new BufferedImage(getSize().width,
-                getSize().height, BufferedImage.TYPE_INT_RGB);
-        Graphics g = copyOfImage.createGraphics();
-        g.drawImage(img, 0, 0, getWidth(), getHeight(), null);
-        return copyOfImage;
-    }
-
     public void setShift(boolean shift) {
         this.shift = shift;
+    }
+
+    public void setTool(AbstractTool tool){
+        System.out.print("Changing tool to ");
+        System.out.println(tool.getClass());
+        if(this.selected_tool != null){
+            this.selected_tool.finish();
+            removeMouseListener(this.selected_tool.getMouseAdapter());
+            removeMouseMotionListener(this.selected_tool.getMouseAdapter());
+        }
+
+        this.selected_tool = tool;
+        this.selected_tool.begin();
+        addMouseListener(selected_tool.getMouseAdapter());
+        addMouseMotionListener(selected_tool.getMouseAdapter());
+
+        repaint();
+    }
+
+    public void clear(){
+        this.front = Color.BLACK;
+        this.back = Color.white;
+        this.imgG.setPaint(Color.white);
+        this.imgG.fill(new Rectangle(0,0,this.img.getWidth(), this.img.getHeight()));
+        repaint();
     }
 }

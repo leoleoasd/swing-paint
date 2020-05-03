@@ -1,4 +1,3 @@
-import tools.Line;
 import ui.MainFrame;
 
 import javax.swing.*;
