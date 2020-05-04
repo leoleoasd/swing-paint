@@ -26,6 +26,7 @@ public class PaintPanel extends JPanel {
         super();
 
         setPreferredSize(new Dimension(800,600));
+        setBorder(BorderFactory.createLineBorder(Color.green));
 
         img = new BufferedImage(800,600,BufferedImage.TYPE_INT_RGB);
         imgG = (Graphics2D) img.getGraphics();

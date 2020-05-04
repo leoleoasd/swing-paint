@@ -40,6 +40,9 @@ public class MainFrame extends JFrame {
         exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(JOptionPane.showConfirmDialog(MainFrame.this, "是否保存") == 0){
+                    save.doClick();
+                }
                 System.exit(0);
             }
         });
@@ -47,12 +50,12 @@ public class MainFrame extends JFrame {
 
 
         JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         Box toolsBar = new Box(BoxLayout.X_AXIS);
-        panel.add(toolsBar, BorderLayout.PAGE_START);
+        panel.add(toolsBar);
         PaintPanel canvas = new PaintPanel();
-        panel.add(canvas, BorderLayout.CENTER);
+        panel.add(canvas);
         ButtonGroup pens_btn_group = new ButtonGroup();
         PenTool.initialize(canvas);
         SelectingTool.initialize(canvas);
@@ -274,6 +277,7 @@ public class MainFrame extends JFrame {
                         canvas.imgG.drawImage(i.getScaledInstance(800,600,BufferedImage.SCALE_SMOOTH),0,0,null);
                         canvas.repaint();
                         MainFrame.this.validate();
+                        MainFrame.this.pack();
                         JOptionPane.showMessageDialog(null, "读取成功!");
                     } catch (IOException exception) {
                         exception.printStackTrace();
@@ -301,7 +305,7 @@ public class MainFrame extends JFrame {
                 }
             }
         });
-        panel.setPreferredSize(new Dimension(900,700));
+        //panel.setPreferredSize(new Dimension(900,700));
 
 
         super.getContentPane().add(panel);
@@ -309,6 +313,7 @@ public class MainFrame extends JFrame {
         super.setVisible(true);
         super.setResizable(false);
         super.setJMenuBar(menuBar);
+        super.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         super.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
                 exit.doClick();
