@@ -58,7 +58,7 @@ Any PR is appreciated.
 ## License.
 
 This project is licensed under the GPL-V3 license with an additional requirement, 
-you can found the GPL-V3 license [HERE](tree/master/LICENSE).
+you can found the GPL-V3 license [HERE](LICENSE).
 
 The additional requirement is that this project should not be used by anyone in their assignments 
 or homework under any situation.
